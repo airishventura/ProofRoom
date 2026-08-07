@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-paper: #fdfcfb;
+  --color-paper-deep: #f7f5f2;
+  --color-paper-darker: #f0eee9;
+  --color-ink: #0a0a12;
+  --color-ink-soft: #4a4540;
+  --color-ink-muted: #8a8378;
+  --color-ink-faint: #d4d0c8;
+  --color-gold: #c8986e;
+  --color-gold-soft: rgba(200,152,110,0.1);
+  --color-gold-deep: #a07d58;
+  --color-match: #3d6e58;
+  --color-match-soft: rgba(61,110,88,0.08);
+  --color-verify: #c47b4e;
+}
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: 'DM Sans', system-ui, sans-serif; background-color: #fdfcfb; color: #0a0a12; }
+::selection { background: rgba(200,152,110,0.2); color: inherit; }
+
+.glass-card {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(28px) saturate(1.15);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 12px 40px rgba(0,0,0,0.04);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.glass-card:hover { border-color: rgba(0,0,0,0.1); box-shadow: 0 4px 30px rgba(0,0,0,0.08); transform: translateY(-3px); }
+
+.glass-nav {
+  background: rgba(253,252,251,0.82);
+  backdrop-filter: blur(28px) saturate(1.2);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.04) 1px, transparent 0);
+  background-size: 32px 32px;
+}
