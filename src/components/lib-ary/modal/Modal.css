@@ -1,0 +1,124 @@
+.lib-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+
+.lib-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.62);
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lib-modal__backdrop--visible {
+  opacity: 1;
+}
+
+.lib-modal__container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  pointer-events: none;
+}
+
+.lib-modal__panel {
+  width: min(100%, 420px);
+  border-radius: var(--lib-modal-radius, 16px);
+  background: #262626;
+  opacity: 0;
+  transform: translateY(28px) scale(0.94);
+  pointer-events: auto;
+  transition:
+    opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lib-modal__panel--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.lib-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 0;
+}
+
+.lib-modal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.lib-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #a3a3a3;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lib-modal__close:hover {
+  background: #333333;
+  color: #fff;
+}
+
+.lib-modal__body {
+  padding: 14px 20px 20px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #a3a3a3;
+}
+
+.lib-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.lib-modal__action {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #2a2a2a;
+  color: #e5e5e5;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lib-modal__action:hover {
+  background: #333333;
+  color: #fff;
+}
+
+.lib-modal__action--primary {
+  background: #e5e5e5;
+  color: #171717;
+}
+
+.lib-modal__action--primary:hover {
+  background: #fff;
+  color: #171717;
+}

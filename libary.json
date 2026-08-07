@@ -1,0 +1,17 @@
+{
+  "componentsDir": "src/components/lib-ary",
+  "cliVersion": "0.1.0",
+  "registry": "https://libary.noahwhiteson.com/mcp",
+  "installed": [
+    "accordion",
+    "button",
+    "card",
+    "dropdown",
+    "input",
+    "modal",
+    "tabs",
+    "toast",
+    "tooltip"
+  ],
+  "notes": "card+accordion installed via MCP get_component (CLI 0.1.0 registry lag)"
+}

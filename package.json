@@ -1,12 +1,27 @@
 {
-  "name": "react-vite-tailwind",
+  "name": "proofroom",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "npm run dev:server & npm run dev",
     "build": "vite build",
-    "preview": "vite preview"
+    "build:server": "npm run build --prefix server",
+    "preview": "vite preview",
+    "test": "vitest run && npm test --prefix server",
+    "test:unit": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:up": "docker compose up -d db",
+    "db:migrate": "npm run migrate --prefix server",
+    "docker:up": "docker compose up -d --build",
+    "docker:tls": "docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f api web",
+    "e2e": "bash scripts/e2e-smoke.sh",
+    "deploy:smoke": "bash scripts/deploy-smoke.sh",
+    "ci": "npm run typecheck && npm run test:unit && npm run build && npm test --prefix server"
   },
   "dependencies": {
     "clsx": "2.1.1",
@@ -25,6 +40,7 @@
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.3.2",
-    "vite-plugin-singlefile": "2.3.0"
+    "vite-plugin-singlefile": "2.3.0",
+    "vitest": "^3.2.4"
   }
 }

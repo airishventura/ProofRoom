@@ -1,0 +1,16 @@
+export { useWorkspaceController } from './useWorkspaceController';
+export type { WorkspaceController } from './useWorkspaceController';
+export { WORKSPACE_TASKS, gatedTasks } from './workspaceTasks';
+export type { WorkspaceTask } from './workspaceTasks';
+export { deriveGateScreen, pickExpandedId } from './gateScreen';
+export type { GateScreen } from './gateScreen';
+export { WorkspaceHeader } from './WorkspaceHeader';
+export { WorkspacePipeline } from './WorkspacePipeline';
+export { SourcesPanel } from './SourcesPanel';
+export { EvidencePanel } from './EvidencePanel';
+export { TasksPanel } from './TasksPanel';
+export { ChatPanel } from './ChatPanel';
+export { WorkspaceGateScreens } from './GateScreens';
+export { WorkspaceShell } from './WorkspaceShell';
+export { GatesPanel } from './GatesPanel';
+export { filterPendingRuns, catalogGatedTasks, gatesSummary } from './pendingRuns';

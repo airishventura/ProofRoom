@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: proofroom
+          POSTGRES_PASSWORD: proofroom
+          POSTGRES_DB: proofroom
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U proofroom -d proofroom"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://proofroom:proofroom@localhost:5432/proofroom
+      JWT_SECRET: ci-test-secret
+      CORS_ORIGIN: http://localhost:5173
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install frontend
+        run: npm ci
+
+      - name: Install server
+        working-directory: server
+        run: npm ci
+
+      - name: Frontend typecheck + build
+        run: npx tsc --noEmit && npm run build
+
+      - name: Server unit tests
+        working-directory: server
+        run: npm test
+
+      - name: Migrate DB
+        working-directory: server
+        run: npm run migrate
+
+      - name: Server build
+        working-directory: server
+        run: npm run build
+
+      - name: Health check
+        working-directory: server
+        run: |
+          node dist/index.js &
+          PID=$!
+          sleep 2
+          curl -sf http://localhost:8787/api/health | grep '"ok":true'
+          kill $PID

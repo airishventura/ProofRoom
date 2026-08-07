@@ -1,0 +1,97 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-proofroom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-proofroom}
+      POSTGRES_DB: ${POSTGRES_DB:-proofroom}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pr_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-proofroom} -d ${POSTGRES_DB:-proofroom}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - pr_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    command: ["redis-server", "--appendonly", "yes"]
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT:-8787}:8787"
+    environment:
+      PORT: 8787
+      NODE_ENV: ${NODE_ENV:-development}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-proofroom}:${POSTGRES_PASSWORD:-proofroom}@db:5432/${POSTGRES_DB:-proofroom}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-dev-proofroom-secret-change-me}
+      JWT_TTL: ${JWT_TTL:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080,http://localhost:5173}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:8080}
+      OBJECT_STORAGE_PATH: ${OBJECT_STORAGE_PATH:-/data/objects}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-}
+      RATE_LIMIT_CHAT: ${RATE_LIMIT_CHAT:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mistral}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_BASE_URL: ${MISTRAL_BASE_URL:-https://api.mistral.ai/v1}
+      MISTRAL_MODEL: ${MISTRAL_MODEL:-mistral-small-latest}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:-}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-}
+      OIDC_HS_SECRET: ${OIDC_HS_SECRET:-}
+      OIDC_DEFAULT_ORG_ID: ${OIDC_DEFAULT_ORG_ID:-org_acme}
+    volumes:
+      - pr_objects:/data/objects
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        # Browser hits host-mapped API; for pure docker-network same-origin, use empty and nginx /api proxy
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8787}
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pr_pg:
+  pr_redis:
+  pr_objects:

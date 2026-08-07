@@ -1,0 +1,31 @@
+# Caddy reverse proxy — TLS termination for ProofRoom
+# Used by docker-compose.tls.yml
+#
+# For local/self-signed: set CADDY_DOMAIN=localhost (Caddy may use internal certs)
+# For public: set CADDY_DOMAIN=app.example.com and open 80/443
+
+{$CADDY_DOMAIN:localhost} {
+	encode gzip
+
+	# API
+	handle /api/* {
+		reverse_proxy api:8787
+	}
+
+	# SPA + static
+	handle {
+		reverse_proxy web:80
+	}
+
+	header {
+		# Baseline hardening
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	log {
+		output stdout
+	}
+}

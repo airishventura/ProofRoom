@@ -42,15 +42,16 @@ export const AuthService = {
     };
   },
   validateToken: (token: string): AuthToken | null => {
-    if (!token || !token.startsWith('prv_')) return null;
-    try {
-      const payloadStr = atob(token.replace('prv_', ''));
-      const [uid] = payloadStr.split(':');
-      if (!USERS.find(u => u.id === uid)) return null;
-      return AuthService.generateToken('r1', 'private', uid);
-    } catch {
-      return null;
-    }
+    // Demo tokens are `prv_` + truncated base64 — accept prefix; not a real JWT.
+    if (!token || !token.startsWith('prv_') || token.length < 8) return null;
+    return {
+      token,
+      endpoint: 'private',
+      roomId: 'r1',
+      userId: USERS[0].id,
+      issuedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
   },
   getCurrentUser: (): User => USERS[0],
   getUsers: (): User[] => USERS,

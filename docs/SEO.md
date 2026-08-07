@@ -4,7 +4,8 @@
 - Title tag with primary keyword: "ProofRoom — Verifiable AI Workspace"
 - Meta description (155 chars): includes due diligence, verified AI, audit, approval, publish
 - Keywords: AI workspace, due diligence, verified AI, audit trail, document workspace, client reports, private endpoint, approval controls
-- Canonical URL: https://proofroom.app/
+- Canonical URL: https://proofroom.site/
+- Author: Airish Ventura (https://x.com/airishventura)
 - Open Graph (og:type, og:title, og:description, og:url, og:image, og:site_name)
 - Twitter Card (summary_large_image) with creator tag
 - Schema.org SoftwareApplication JSON-LD with feature list, offers, provider
