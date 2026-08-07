@@ -102,15 +102,13 @@ async function seed() {
 }
 
 async function main() {
-  // Additive columns BEFORE full schema (IF NOT EXISTS tables skip, indexes need columns)
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS orgs (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      slug TEXT UNIQUE NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
+  // 1) Full schema first — CREATE IF NOT EXISTS is safe on fresh and existing DBs.
+  //    (Previously ALTERs ran first and failed on empty CI DBs: relation "users" does not exist.)
+  const sql = readFileSync(join(__dirname, 'schema.sql'), 'utf8');
+  await pool.query(sql);
+
+  // 2) Additive upgrades for DBs created before these columns existed.
+  //    No-ops when schema.sql already included the columns.
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS org_id TEXT`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS sso_sub TEXT`);
   await pool.query(`ALTER TABLE rooms ADD COLUMN IF NOT EXISTS org_id TEXT`);
@@ -118,9 +116,6 @@ async function main() {
     `ALTER TABLE published_reports ADD COLUMN IF NOT EXISTS snapshot JSONB NOT NULL DEFAULT '{}'::jsonb`
   );
   await pool.query(`ALTER TABLE published_reports ADD COLUMN IF NOT EXISTS pdf_object_key TEXT`);
-
-  const sql = readFileSync(join(__dirname, 'schema.sql'), 'utf8');
-  await pool.query(sql);
 
   await pool.query(
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_sso_sub ON users(sso_sub) WHERE sso_sub IS NOT NULL`

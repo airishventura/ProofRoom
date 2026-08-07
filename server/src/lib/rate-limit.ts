@@ -4,7 +4,7 @@
  * - Redis: when REDIS_URL is set (multi-instance)
  */
 
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { config } from '../config.js';
 
 export interface RateLimitResult {
@@ -32,14 +32,14 @@ function getRedis(): Redis | null {
       lazyConnect: true,
       connectTimeout: 2000,
     });
-    redis.on('error', err => {
+    redis.on('error', (err: Error) => {
       console.warn('[rate-limit] redis error:', err.message);
       redisReady = false;
     });
     redis.on('ready', () => {
       redisReady = true;
     });
-    void redis.connect().catch(err => {
+    void redis.connect().catch((err: Error) => {
       console.warn('[rate-limit] redis connect failed, falling back to memory:', err.message);
       redisReady = false;
     });
@@ -122,7 +122,8 @@ async function redisLimit(
   if (card > opts.limit) {
     // remove the hit we just added and block
     await client.zrem(rkey, member);
-    const oldest = await client.zrange(rkey, 0, 0, 'WITHSCORES');
+    // ioredis v6 types require string/Buffer for stop when WITHSCORES is used
+    const oldest = await client.zrange(rkey, 0, '0', 'WITHSCORES');
     const oldestTs = oldest.length >= 2 ? Number(oldest[1]) : now;
     const retryAfterSec = Math.max(1, Math.ceil((oldestTs + opts.windowMs - now) / 1000));
     return { ok: false, remaining: 0, retryAfterSec, limit: opts.limit };

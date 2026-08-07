@@ -40,10 +40,16 @@ publishRoutes.get('/public/:roomId/pdf', async c => {
   const roomId = c.req.param('roomId');
   const pdf = await getPublishedPdf(roomId);
   if (!pdf) return c.json({ error: 'Not published' }, 404);
-  c.header('Content-Type', 'application/pdf');
-  c.header('Content-Disposition', `attachment; filename="proofroom-${roomId}.pdf"`);
-  c.header('Cache-Control', 'public, max-age=300');
-  return c.body(pdf);
+  // Node Buffer is Uint8Array<ArrayBufferLike>; DOM BodyInit wants ArrayBuffer-backed bytes.
+  const body = Uint8Array.from(pdf);
+  return new Response(body, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="proofroom-${roomId}.pdf"`,
+      'Cache-Control': 'public, max-age=300',
+    },
+  });
 });
 
 const secured = new Hono<AppEnv>();
