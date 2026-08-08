@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { login, loginWithSso, type JwtUser } from '../lib/auth.js';
+import { login, loginWithSso, register, type JwtUser } from '../lib/auth.js';
 import { writeAudit } from '../services/audit.js';
 import { clientKey, rateLimitAsync } from '../lib/rate-limit.js';
 import { config } from '../config.js';
@@ -12,6 +12,14 @@ import { verifyOidcIdToken } from '../lib/oidc.js';
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(4).max(200),
+});
+
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).max(200),
+  name: z.string().min(1).max(120),
+  orgName: z.string().min(1).max(120).optional(),
+  inviteToken: z.string().min(8).max(200).optional(),
 });
 
 const ssoSchema = z.object({
@@ -36,7 +44,7 @@ authRoutes.post('/login', async c => {
   if (!result) return c.json({ error: 'Invalid credentials' }, 401);
 
   await writeAudit({
-    roomId: 'r1',
+    roomId: result.user.orgId || 'auth',
     type: 'auth',
     action: `Login ${result.user.email}`,
     actor: result.user.name,
@@ -46,6 +54,49 @@ authRoutes.post('/login', async c => {
   });
 
   return c.json(result);
+});
+
+/** Public self-serve signup (org + default room) or invite accept. */
+authRoutes.post('/register', async c => {
+  const ip = clientKey(c);
+  const rl = await rateLimitAsync(`register:${ip}`, config.rateLimitLogin);
+  c.header('X-RateLimit-Limit', String(rl.limit));
+  c.header('X-RateLimit-Remaining', String(rl.remaining));
+  if (!rl.ok) {
+    c.header('Retry-After', String(rl.retryAfterSec));
+    return c.json({ error: 'Too many attempts. Try again later.' }, 429);
+  }
+
+  const body = registerSchema.safeParse(await c.req.json());
+  if (!body.success) {
+    return c.json({ error: 'Invalid payload (password min 8 chars)' }, 400);
+  }
+
+  const result = await register(body.data);
+  if (!result) return c.json({ error: 'Registration failed' }, 400);
+  if ('error' in result) {
+    const map: Record<string, { status: 400 | 409; msg: string }> = {
+      email_taken: { status: 409, msg: 'Email already registered' },
+      invalid_invite: { status: 400, msg: 'Invalid invite' },
+      invite_expired: { status: 400, msg: 'Invite expired' },
+      invite_email_mismatch: { status: 400, msg: 'Invite email does not match' },
+    };
+    const code = result.error ?? 'unknown';
+    const m = map[code] || { status: 400 as const, msg: 'Registration failed' };
+    return c.json({ error: m.msg }, m.status);
+  }
+
+  await writeAudit({
+    roomId: result.user.orgId || 'auth',
+    type: 'auth',
+    action: `Register ${result.user.email}`,
+    actor: result.user.name,
+    receiptId: `#REG-${Date.now().toString(36).toUpperCase()}`,
+    cost: '$0.00',
+    evidenceRefs: [result.user.sub, result.user.orgId || ''].filter(Boolean),
+  });
+
+  return c.json(result, 201);
 });
 
 /** Public SSO config for the login page (no secrets). */

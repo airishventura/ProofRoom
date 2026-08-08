@@ -116,8 +116,28 @@ export async function apiFetch<T = unknown>(path: string, opts: RequestInit = {}
 export async function apiLogin(email: string, password: string) {
   const data = await apiFetch<{
     token: string;
-    user: { sub: string; email: string; name: string; role: string };
+    user: { sub: string; email: string; name: string; role: string; orgId?: string };
   }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+  setToken(data.token);
+  try {
+    localStorage.setItem('pr.user', JSON.stringify(data.user));
+  } catch {
+    /* */
+  }
+  return data;
+}
+
+export async function apiRegister(input: {
+  email: string;
+  password: string;
+  name: string;
+  orgName?: string;
+  inviteToken?: string;
+}) {
+  const data = await apiFetch<{
+    token: string;
+    user: { sub: string; email: string; name: string; role: string; orgId?: string };
+  }>('/api/auth/register', { method: 'POST', body: JSON.stringify(input) });
   setToken(data.token);
   try {
     localStorage.setItem('pr.user', JSON.stringify(data.user));

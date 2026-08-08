@@ -1,6 +1,15 @@
 {
   "framework": "vite",
-  "buildCommand": "npm run build",
+  "installCommand": "npm install --include=dev && npm install --prefix server --include=dev",
+  "buildCommand": "npm run schema:embed && npm run build",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "functions": {
+    "api/[[...route]].ts": {
+      "maxDuration": 60,
+      "includeFiles": "server/src/db/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }

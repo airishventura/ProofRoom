@@ -9,6 +9,9 @@ Private workspace for due diligence with verified AI runs, approval gates, audit
 | **Local demo** | `npm run dev` — browser `localStorage` (no backend) |
 | **API + Postgres** | Docker Postgres + `server/` + Mistral LLM |
 | **Full stack Docker** | `npm run docker:up` — db + api + nginx web |
+| **Vercel production** | SPA + serverless `api/[[...route]].ts`; set `VITE_API_URL=same` + `DATABASE_URL` (Neon) |
+
+Auth: **Sign up** creates org + private room (`POST /api/auth/register`). Invite tokens join an org. Production should keep `SEED_DEMO=false`.
 
 ## Quick start (local demo)
 

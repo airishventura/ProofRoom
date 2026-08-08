@@ -7,11 +7,21 @@ Never commit real values. Use a secrets manager or host env vars.
 | Variable | Rules |
 |----------|--------|
 | `JWT_SECRET` | ≥ 32 random chars; **not** `change-me-in-production` / `dev-proofroom-secret-change-me` |
-| `DATABASE_URL` | Strong DB password; not `proofroom:proofroom@localhost` |
+| `DATABASE_URL` | Strong DB password; not `proofroom:proofroom@localhost` (Neon/Supabase SSL auto) |
 | `POSTGRES_PASSWORD` | Same strength when using Compose |
 | `CORS_ORIGIN` | Explicit origin(s), comma-separated; **not** `*` |
 | `PUBLIC_APP_URL` | Public HTTPS web origin (published report links) |
 | `NODE_ENV` | `production` (enables secret validation + stricter rate limits) |
+| `VITE_API_URL` | `same` (Vercel serverless `/api`) **or** absolute API origin |
+| `BOOTSTRAP_EMAIL` / `BOOTSTRAP_PASSWORD` | First admin when DB empty and `SEED_DEMO=false` (≥8 char password) |
+
+## Durable API on Vercel (recommended)
+
+1. Accept Neon terms once (TTY): `npx vercel integration accept-terms neon`
+2. Provision free DB: `npx vercel integration add neon --plan free_v3 -m region=iad1 -m auth=false`
+3. Deploy: `DATABASE_URL=… JWT_SECRET=… BOOTSTRAP_EMAIL=… BOOTSTRAP_PASSWORD=… ./scripts/deploy-prod.sh`
+
+Serverless entry: `api/[[...route]].ts` (Hono). Schema auto-migrates on cold start.
 
 ## Strongly recommended
 

@@ -87,10 +87,10 @@ export const config = {
   /** Redis for multi-instance rate limits (optional). */
   redisUrl: process.env.REDIS_URL || '',
 
-  /** Local object storage root for publish PDFs etc. */
+  /** Local object storage root for publish PDFs etc. (/tmp on Vercel). */
   objectStoragePath:
     process.env.OBJECT_STORAGE_PATH ||
-    resolve(process.cwd(), 'data', 'objects'),
+    (process.env.VERCEL ? '/tmp/proofroom-objects' : resolve(process.cwd(), 'data', 'objects')),
 
   /**
    * OIDC / SSO (optional).

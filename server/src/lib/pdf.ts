@@ -77,7 +77,6 @@ export function buildReportPdf(input: PdfReportInput): Buffer {
   if (!pages.length) pages.push(['(empty)']);
 
   const objects: string[] = [];
-  const offsets: number[] = [0]; // 1-indexed later
 
   const addObj = (body: string) => {
     objects.push(body);

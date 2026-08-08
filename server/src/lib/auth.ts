@@ -72,6 +72,109 @@ export async function login(email: string, password: string) {
   return { token, user: jwtUser };
 }
 
+export interface RegisterInput {
+  email: string;
+  password: string;
+  name: string;
+  orgName?: string;
+  inviteToken?: string;
+}
+
+/**
+ * Public signup: creates org + user + default private room.
+ * Optional inviteToken joins existing org instead.
+ */
+export async function register(input: RegisterInput) {
+  const email = input.email.toLowerCase().trim();
+  const name = input.name.trim();
+  if (!email || !name || input.password.length < 8) return null;
+
+  const exists = await query('SELECT id FROM users WHERE email = $1', [email]);
+  if (exists.rows[0]) {
+    return { error: 'email_taken' as const };
+  }
+
+  let orgId: string;
+  let orgRole = 'owner';
+  let userRole = 'lead';
+
+  if (input.inviteToken) {
+    const inv = await query<{
+      id: string;
+      org_id: string;
+      email: string;
+      role: string;
+      expires_at: Date;
+      accepted_at: Date | null;
+    }>(
+      `SELECT id, org_id, email, role, expires_at, accepted_at
+       FROM org_invites WHERE token = $1`,
+      [input.inviteToken]
+    );
+    const row = inv.rows[0];
+    if (!row || row.accepted_at) return { error: 'invalid_invite' as const };
+    if (new Date(row.expires_at).getTime() < Date.now()) return { error: 'invite_expired' as const };
+    if (row.email.toLowerCase() !== email) return { error: 'invite_email_mismatch' as const };
+    orgId = row.org_id;
+    orgRole = row.role === 'admin' || row.role === 'owner' ? row.role : 'member';
+    userRole = row.role === 'lead' || row.role === 'admin' ? row.role : 'analyst';
+  } else {
+    const base =
+      (input.orgName || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 28) ||
+      'org';
+    orgId = `org_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+    const slug = `${base}-${orgId.slice(-6)}`;
+    await query(`INSERT INTO orgs (id, name, slug) VALUES ($1,$2,$3)`, [
+      orgId,
+      input.orgName?.trim() || `${name}'s workspace`,
+      slug,
+    ]);
+  }
+
+  const userId = `usr_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  const hash = await bcrypt.hash(input.password, 10);
+  await query(
+    `INSERT INTO users (id, email, name, role, password_hash, org_id)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [userId, email, name, userRole, hash, orgId]
+  );
+  await query(
+    `INSERT INTO org_members (org_id, user_id, role) VALUES ($1,$2,$3) ON CONFLICT DO NOTHING`,
+    [orgId, userId, orgRole]
+  );
+
+  if (input.inviteToken) {
+    await query(
+      `UPDATE org_invites SET accepted_at = NOW() WHERE token = $1 AND accepted_at IS NULL`,
+      [input.inviteToken]
+    );
+  }
+
+  // Default private room for new org owners; invitees join existing rooms via membership
+  if (!input.inviteToken) {
+    const roomId = `rm_${Date.now().toString(36)}`;
+    await query(
+      `INSERT INTO rooms (id, name, endpoint, description, owner_id, org_id)
+       VALUES ($1,$2,'private',$3,$4,$5)`,
+      [roomId, 'Primary workspace', 'Your due diligence workspace', userId, orgId]
+    );
+    await query(`INSERT INTO room_members (room_id, user_id, role) VALUES ($1,$2,'owner')`, [
+      roomId,
+      userId,
+    ]);
+  }
+
+  const jwtUser: JwtUser = {
+    sub: userId,
+    email,
+    name,
+    role: userRole,
+    orgId,
+  };
+  const token = await signToken(jwtUser);
+  return { token, user: jwtUser };
+}
+
 /** Provision or update user from verified OIDC claims; issue app JWT. */
 export async function loginWithSso(claims: OidcClaims) {
   const orgId = claims.orgId || config.oidcDefaultOrgId || 'org_acme';

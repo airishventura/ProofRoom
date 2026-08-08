@@ -13,3 +13,5 @@ coverage/
 
 # object storage (local blobs)
 **/data/objects/
+.env*
+.local/

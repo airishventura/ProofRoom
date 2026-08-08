@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { query } from '../db/pool.js';
 import { userCanAccessRoom } from '../lib/auth.js';
 import { writeAudit } from '../services/audit.js';
@@ -35,6 +36,58 @@ roomRoutes.get('/', async c => {
       spend: formatUsd(Number(r.spend) || 0),
     })),
   });
+});
+
+const createRoomSchema = z.object({
+  name: z.string().min(1).max(200),
+  endpoint: z.enum(['private', 'shared']).default('private'),
+  description: z.string().max(500).optional(),
+});
+
+/** Create a room in the caller's org. */
+roomRoutes.post('/', async c => {
+  const user = c.get('user');
+  const body = createRoomSchema.safeParse(await c.req.json());
+  if (!body.success) return c.json({ error: 'Invalid payload' }, 400);
+
+  const orgId = user.orgId;
+  if (!orgId) return c.json({ error: 'No organization' }, 400);
+
+  const id = `rm_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  await query(
+    `INSERT INTO rooms (id, name, endpoint, description, owner_id, org_id)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [id, body.data.name, body.data.endpoint, body.data.description || '', user.sub, orgId]
+  );
+  await query(`INSERT INTO room_members (room_id, user_id, role) VALUES ($1,$2,'owner')`, [
+    id,
+    user.sub,
+  ]);
+
+  await writeAudit({
+    roomId: id,
+    type: 'auth',
+    action: `Create room ${body.data.name}`,
+    actor: user.name,
+    receiptId: `#RM-${id.slice(-6).toUpperCase()}`,
+    cost: '$0.00',
+    evidenceRefs: [id, orgId],
+  });
+
+  return c.json(
+    {
+      room: {
+        id,
+        name: body.data.name,
+        endpoint: body.data.endpoint,
+        description: body.data.description || '',
+        docs: 0,
+        runs: 0,
+        spend: formatUsd(0),
+      },
+    },
+    201
+  );
 });
 
 roomRoutes.get('/:id', async c => {

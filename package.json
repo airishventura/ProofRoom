@@ -21,15 +21,25 @@
     "docker:logs": "docker compose logs -f api web",
     "e2e": "bash scripts/e2e-smoke.sh",
     "deploy:smoke": "bash scripts/deploy-smoke.sh",
-    "ci": "npm run typecheck && npm run test:unit && npm run build && npm test --prefix server"
+    "ci": "npm run typecheck && npm run test:unit && npm run build && npm test --prefix server",
+    "schema:embed": "node scripts/sync-schema-embed.mjs",
+    "deploy:prod": "bash scripts/deploy-prod.sh"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "clsx": "2.1.1",
+    "dotenv": "^17.4.2",
+    "hono": "^4.8.3",
+    "ioredis": "^6.0.0",
+    "jose": "^6.0.11",
     "lucide-react": "^1.30.0",
+    "openai": "^5.8.2",
+    "pg": "^8.16.3",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-router-dom": "^7.18.2",
-    "tailwind-merge": "3.4.0"
+    "tailwind-merge": "3.4.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.17",
