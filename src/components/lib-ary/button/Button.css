@@ -1,0 +1,62 @@
+.lib-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: var(--lib-button-radius, 9999px);
+  background: #2a2a2a;
+  color: #e5e5e5;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transform: scale(1);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.15s ease;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.lib-button:hover {
+  background: #333333;
+  color: #fff;
+}
+
+.lib-button--pressed {
+  transform: scale(0.94);
+  background: #262626;
+}
+
+.lib-button svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.lib-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.lib-button--primary {
+  background: #e5e5e5;
+  color: #171717;
+}
+
+.lib-button--primary:hover {
+  background: #fff;
+  color: #171717;
+}
+
+.lib-button--ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lib-button--ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lib-button--icon {
+  padding: 10px 12px;
+  gap: 0;
+}

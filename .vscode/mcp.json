@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "lib-ary": {
+      "type": "http",
+      "url": "https://libary.noahwhiteson.com/mcp"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+# TLS profile — use with base compose:
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up -d --build
+#
+# Env:
+#   CADDY_DOMAIN=localhost          # or app.example.com
+#   PUBLIC_APP_URL=https://localhost
+#   CORS_ORIGIN=https://localhost
+#   VITE_API_URL=https://localhost   # same-origin via Caddy /api proxy preferred: empty string
+#   JWT_SECRET=...                  # required when NODE_ENV=production
+#   SEED_DEMO=false                 # production default
+
+services:
+  api:
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      SEED_DEMO: ${SEED_DEMO:-false}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://localhost}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://localhost}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET for TLS/production stack}
+      # Behind Caddy — trust X-Forwarded-For from proxy network only
+    # Do not publish API port publicly when TLS edge is used
+    ports: !override []
+    expose:
+      - "8787"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        # Same-origin: browser calls /api via Caddy → api
+        VITE_API_URL: ${VITE_API_URL:-}
+    ports: !override []
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2.8-alpine
+    ports:
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTP_PORT:-80}:80"
+    environment:
+      CADDY_DOMAIN: ${CADDY_DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+volumes:
+  caddy_data:
+  caddy_config:

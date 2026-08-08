@@ -1,0 +1,69 @@
+name: Deploy GitHub Pages
+
+# Builds the Vite SPA (single-file) with base /ProofRoom/ and publishes it.
+# Supports both:
+#   A) GitHub Actions Pages (Settings → Pages → Source: GitHub Actions)
+#   B) Branch deploy fallback (Settings → Pages → Branch: gh-pages / root)
+#
+# Live URL: https://airishventura.github.io/ProofRoom/
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build for GitHub Pages
+        env:
+          VITE_BASE: /ProofRoom/
+        run: npm run build
+
+      - name: SPA fallback (client routes)
+        run: cp dist/index.html dist/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Publish gh-pages branch (branch-source fallback)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          force_orphan: true
+          commit_message: 'deploy: GitHub Pages SPA'
+
+  deploy-actions:
+    # Runs only when Pages is set to "GitHub Actions" build type.
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    continue-on-error: true
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

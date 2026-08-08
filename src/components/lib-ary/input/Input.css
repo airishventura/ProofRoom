@@ -1,0 +1,33 @@
+.lib-input {
+  display: block;
+  width: min(100%, 280px);
+  padding: 12px 14px;
+  border: none;
+  border-radius: var(--lib-input-radius, 12px);
+  background: #2a2a2a;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lib-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lib-input:hover:not(:disabled) {
+  background: #333333;
+}
+
+.lib-input:focus {
+  outline: none;
+  background: #333333;
+}
+
+.lib-input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

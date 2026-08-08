@@ -1,0 +1,241 @@
+/**
+ * ProofRoom ↔ LibAry theme bridge (PR-4a)
+ *
+ * Layer 1: remap solid @theme color vars under dark shell so
+ *   bg-paper, text-ink, bg-paper-deep, etc. resolve dark.
+ * Layer 2: explicit overrides for Tailwind slash-opacity utilities
+ *   (baked hex in build — cascade alone is insufficient).
+ *
+ * Inventory (dark routes: Workspace, Layout, Audit, Publish, Approvals):
+ *   border-ink-faint/10|15|20|30|50, bg-ink/5, bg-paper/95,
+ *   border-gold/10|15|20|30, border-match/20, border-rose/15|30,
+ *   from-gold/20, to-match/20, shadow-ink/5|10
+ */
+
+/* === Layer 1: solid theme tokens === */
+html.pr-theme-dark,
+.pr-shell--dark {
+  --color-paper: #171717;
+  --color-paper-deep: #1f1f1f;
+  --color-paper-darker: #2a2a2a;
+  --color-ink: #e5e5e5;
+  --color-ink-soft: #a3a3a3;
+  --color-ink-muted: #737373;
+  --color-ink-faint: #404040;
+  /* Soft tokens: full rgba value (alpha baked into var) */
+  --color-gold-soft: rgba(200, 152, 110, 0.14);
+  --color-match-soft: rgba(61, 110, 88, 0.18);
+  --color-rose-soft: rgba(181, 74, 74, 0.16);
+  color-scheme: dark;
+}
+
+html.pr-theme-dark {
+  color-scheme: dark;
+}
+
+html.pr-theme-dark body {
+  background-color: #171717;
+  color: #e5e5e5;
+}
+
+.pr-shell--dark {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  min-height: 100vh;
+}
+
+/* Glass surfaces → LibAry elevated dark */
+.pr-shell--dark .glass-card {
+  background: rgba(42, 42, 42, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pr-shell--dark .glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.45);
+}
+
+.pr-shell--dark .glass-nav {
+  background: rgba(23, 23, 23, 0.88);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Footer + brand credit under dark shell */
+.pr-shell--dark footer {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Mobile workspace tabs: full-width equal segments, no horizontal squeeze */
+@media (max-width: 1023px) {
+  .lib-tabs__list.w-full,
+  .lib-tabs__list.mb-4.w-full {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .lib-tabs__list.w-full .lib-tabs__tab,
+  .lib-tabs__list.mb-4.w-full .lib-tabs__tab {
+    flex: 1 1 0;
+    text-align: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: nowrap;
+  }
+}
+
+/* Hero pattern on dark (if ever used under shell) */
+.pr-shell--dark .hero-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+}
+
+/* === Layer 2: slash-opacity overrides (Strategy A) === */
+
+/* ink-faint borders → white alpha */
+.pr-shell--dark .border-ink-faint\/10,
+html.pr-theme-dark .border-ink-faint\/10 {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.pr-shell--dark .border-ink-faint\/15,
+html.pr-theme-dark .border-ink-faint\/15 {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+.pr-shell--dark .border-ink-faint\/20,
+html.pr-theme-dark .border-ink-faint\/20 {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.pr-shell--dark .border-ink-faint\/30,
+html.pr-theme-dark .border-ink-faint\/30 {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.pr-shell--dark .border-ink-faint\/50,
+html.pr-theme-dark .border-ink-faint\/50,
+.pr-shell--dark .hover\:border-ink-faint\/50:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Critical: light-theme bg-ink/5 is near-black @ 5% — invisible on dark */
+.pr-shell--dark .bg-ink\/5,
+html.pr-theme-dark .bg-ink\/5 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.pr-shell--dark .bg-paper\/95,
+html.pr-theme-dark .bg-paper\/95 {
+  background-color: rgba(23, 23, 23, 0.95);
+}
+
+/* gold borders */
+.pr-shell--dark .border-gold\/10 {
+  border-color: rgba(200, 152, 110, 0.18);
+}
+.pr-shell--dark .border-gold\/15 {
+  border-color: rgba(200, 152, 110, 0.22);
+}
+.pr-shell--dark .border-gold\/20 {
+  border-color: rgba(200, 152, 110, 0.28);
+}
+.pr-shell--dark .border-gold\/30,
+.pr-shell--dark .hover\:border-gold\/30:hover {
+  border-color: rgba(200, 152, 110, 0.38);
+}
+.pr-shell--dark .border-gold\/40 {
+  border-color: rgba(200, 152, 110, 0.45);
+}
+.pr-shell--dark .border-gold\/50,
+.pr-shell--dark .hover\:border-gold\/50:hover {
+  border-color: rgba(200, 152, 110, 0.55);
+}
+
+/* match / rose */
+.pr-shell--dark .border-match\/20 {
+  border-color: rgba(61, 110, 88, 0.35);
+}
+.pr-shell--dark .border-rose\/15 {
+  border-color: rgba(181, 74, 74, 0.28);
+}
+.pr-shell--dark .border-rose\/30,
+.pr-shell--dark .hover\:border-rose\/30:hover {
+  border-color: rgba(181, 74, 74, 0.4);
+}
+
+/* gradient chips (Layout logo) */
+.pr-shell--dark .from-gold\/20 {
+  --tw-gradient-from: rgba(200, 152, 110, 0.22);
+  --tw-gradient-to: rgba(200, 152, 110, 0);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.pr-shell--dark .to-match\/20 {
+  --tw-gradient-to: rgba(61, 110, 88, 0.22);
+}
+
+/* shadows — darker ambient on dark UI */
+.pr-shell--dark .shadow-ink\/5 {
+  --tw-shadow-color: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.45);
+}
+.pr-shell--dark .shadow-ink\/10 {
+  --tw-shadow-color: rgba(0, 0, 0, 0.55);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.55);
+}
+
+/* Focus rings on gold (common outline-none + focus:border-gold/30|40) */
+.pr-shell--dark .focus\:border-gold\/30:focus {
+  border-color: rgba(200, 152, 110, 0.38);
+}
+.pr-shell--dark .focus\:border-gold\/40:focus {
+  border-color: rgba(200, 152, 110, 0.45);
+}
+
+/* Compact room dropdown in nav */
+.pr-shell--dark .pr-nav-dropdown .lib-dropdown {
+  width: 100%;
+  max-width: 14rem;
+}
+.pr-shell--dark .pr-nav-dropdown .lib-dropdown__trigger {
+  padding: 6px 10px;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+}
+.pr-shell--dark .pr-nav-dropdown .lib-dropdown__option {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 8px 10px;
+}
+
+/* LibAry full-width helpers for workspace panels (Card defaults to 360px) */
+.pr-shell--dark .lib-card.pr-card-full {
+  width: 100%;
+  max-width: none;
+}
+
+.pr-shell--dark .lib-input.pr-input-full {
+  width: 100%;
+  max-width: none;
+}
+
+/* Accordion sits on card surface */
+.pr-shell--dark .lib-accordion {
+  width: 100%;
+}
+
+.pr-shell--dark .lib-card .lib-accordion__item {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Reduced motion: drop flourish transforms, keep useful state transitions */
+@media (prefers-reduced-motion: reduce) {
+  .pr-shell--dark .glass-card {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .pr-shell--dark .glass-card:hover {
+    transform: none;
+  }
+  .pr-shell--dark .hover\:-translate-y-0\.5:hover {
+    transform: none;
+  }
+  .pr-shell--dark .animate-\[fadeUp_0\.6s_ease-out\] {
+    animation: none;
+  }
+}

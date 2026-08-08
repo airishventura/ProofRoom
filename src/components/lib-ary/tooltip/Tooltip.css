@@ -1,0 +1,80 @@
+.lib-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.lib-tooltip__trigger {
+  display: inline-flex;
+}
+
+.lib-tooltip__bubble {
+  position: absolute;
+  z-index: 30;
+  padding: 8px 12px;
+  border-radius: var(--lib-tooltip-radius, 8px);
+  background: #262626;
+  color: #e5e5e5;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.18s;
+}
+
+.lib-tooltip:hover .lib-tooltip__bubble,
+.lib-tooltip:focus-within .lib-tooltip__bubble {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lib-tooltip__bubble--top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translate(-50%, 6px);
+}
+
+.lib-tooltip:hover .lib-tooltip__bubble--top,
+.lib-tooltip:focus-within .lib-tooltip__bubble--top {
+  transform: translate(-50%, 0);
+}
+
+.lib-tooltip__bubble--bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translate(-50%, -6px);
+}
+
+.lib-tooltip:hover .lib-tooltip__bubble--bottom,
+.lib-tooltip:focus-within .lib-tooltip__bubble--bottom {
+  transform: translate(-50%, 0);
+}
+
+.lib-tooltip__bubble--left {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translate(6px, -50%);
+}
+
+.lib-tooltip:hover .lib-tooltip__bubble--left,
+.lib-tooltip:focus-within .lib-tooltip__bubble--left {
+  transform: translate(0, -50%);
+}
+
+.lib-tooltip__bubble--right {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translate(-6px, -50%);
+}
+
+.lib-tooltip:hover .lib-tooltip__bubble--right,
+.lib-tooltip:focus-within .lib-tooltip__bubble--right {
+  transform: translate(0, -50%);
+}

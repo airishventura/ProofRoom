@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/libary-bridge.css";
 
 @theme {
   --font-display: 'Cormorant Garamond', Georgia, serif;
@@ -18,6 +19,9 @@
   --color-match: #3d6e58;
   --color-match-soft: rgba(61,110,88,0.08);
   --color-verify: #c47b4e;
+  --color-rose: #b54a4a;
+  --color-rose-soft: rgba(181,74,74,0.08);
+  --color-violet: #6b5b95;
 }
 
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
