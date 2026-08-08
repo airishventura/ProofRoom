@@ -1,21 +1,51 @@
 /**
  * API base URL.
- * - unset / "off" → local mock (no API)
- * - "same" / "" → same-origin `/api` (Vite proxy or nginx)
+ * - unset / "off" / "false" → local mock (no API)
+ * - "same" / "" → same-origin `/api` (Vite proxy or nginx) — only when intentionally set
  * - "http://..." → absolute API URL
+ *
+ * Guard: never call browser localhost from a remote origin (avoids white-screen /
+ * hung API mode when a local .env was baked into a production build).
  */
 const rawEnv = import.meta.env.VITE_API_URL as string | undefined;
 const raw = rawEnv === undefined ? undefined : String(rawEnv).trim();
 
+function isLocalhostHost(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
+function isLocalhostUrl(url: string): boolean {
+  try {
+    const u = new URL(url, 'http://localhost');
+    return isLocalhostHost(u.hostname);
+  } catch {
+    return /localhost|127\.0\.0\.1/i.test(url);
+  }
+}
+
 function resolveApiBase(): string {
   if (raw === undefined || raw === 'off' || raw === 'false') return '';
+  // Explicit empty / same → same-origin API
   if (raw === '' || raw === 'same' || raw === '/') return '';
+  // Drop localhost API when the page is not on localhost (misbaked prod builds)
+  if (typeof window !== 'undefined' && isLocalhostUrl(raw) && !isLocalhostHost(window.location.hostname)) {
+    return '';
+  }
   return raw.replace(/\/$/, '');
 }
 
+function resolveApiMode(): boolean {
+  if (raw === undefined || raw === 'off' || raw === 'false') return false;
+  // Absolute localhost URL on a remote host → mock mode (see resolveApiBase)
+  if (raw && isLocalhostUrl(raw) && typeof window !== 'undefined' && !isLocalhostHost(window.location.hostname)) {
+    return false;
+  }
+  // "" / "same" still means API mode (same-origin)
+  return true;
+}
+
 const API_URL = resolveApiBase();
-const API_MODE =
-  raw !== undefined && raw !== 'off' && raw !== 'false';
+const API_MODE = resolveApiMode();
 
 const TOKEN_KEY = 'pr.jwt';
 
