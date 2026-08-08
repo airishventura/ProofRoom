@@ -10,11 +10,19 @@ import ApprovalsPage from './pages/Approvals';
 import LoginPage from './pages/Login';
 import PublicReportPage from './pages/PublicReport';
 
-/** Vite BASE_URL always ends with `/`; React Router basename must not (except root). */
+/**
+ * Map Vite BASE_URL → React Router basename.
+ * Root / relative bases (`/`, `./`, `.`) must be undefined — otherwise RR gets
+ * basename "/." and matches nothing (white screen).
+ * Only absolute subpaths (e.g. `/ProofRoom`) get a basename.
+ */
 function routerBasename(): string | undefined {
-  const base = import.meta.env.BASE_URL || '/';
-  if (base === '/') return undefined;
-  return base.replace(/\/$/, '');
+  const base = (import.meta.env.BASE_URL || '/').trim();
+  if (!base || base === '/' || base === './' || base === '.') return undefined;
+  const stripped = base.replace(/\/+$/, '');
+  if (!stripped || stripped === '.' || stripped === './') return undefined;
+  if (!stripped.startsWith('/')) return undefined;
+  return stripped;
 }
 
 export default function App() {
